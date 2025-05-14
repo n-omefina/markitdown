@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir "markitdown[all]==0.1.1"
+RUN pip install --no-cache-dir "markitdown[all]==0.1.1" uvicorn
 
 EXPOSE 8000
 
