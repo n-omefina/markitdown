@@ -1,33 +1,17 @@
-FROM python:3.13-slim-bullseye
+FROM python:3.10-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV EXIFTOOL_PATH=/usr/bin/exiftool
-ENV FFMPEG_PATH=/usr/bin/ffmpeg
-
-# Runtime dependency
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    exiftool
-
-ARG INSTALL_GIT=false
-RUN if [ "$INSTALL_GIT" = "true" ]; then \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    git; \
-    fi
+        tesseract-ocr \
+        poppler-utils \
+        ffmpeg \
+        exiftool && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Cleanup
-RUN rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir "markitdown[all]==0.1.1"
 
-WORKDIR /app
-COPY . /app
-RUN pip --no-cache-dir install \
-    /app/packages/markitdown[all] \
-    /app/packages/markitdown-sample-plugin
+EXPOSE 8000
 
-# Default USERID and GROUPID
-ARG USERID=nobody
-ARG GROUPID=nogroup
-
-USER $USERID:$GROUPID
-
-ENTRYPOINT [ "markitdown" ]
+# 👇 C’est cette ligne qui lance l’API HTTP au lieu de la CLI
+CMD ["uvicorn", "markitdown.api:app", "--host", "0.0.0.0", "--port", "8000"]
